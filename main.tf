@@ -43,7 +43,7 @@ provider "github" {
 
 module "aws_static_site" {
   source  = "dvargas92495/static-site/aws"
-  version = "3.2.4"
+  version = "3.2.5"
 
   domain = "remix.davidvargas.me"
   secret = var.secret
