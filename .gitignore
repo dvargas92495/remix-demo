@@ -2,5 +2,6 @@ node_modules
 
 /.cache
 /build
+/out
 /public/build
 .env
