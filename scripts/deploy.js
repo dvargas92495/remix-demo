@@ -25,56 +25,44 @@ const options = {
 
 const FunctionName = "remix-davidvargas-me_origin-request";
 
-const waitForLambda = (props) => {
-  const { trial = 0, resolve } = props;
+const waitForLambda = (trial = 0) => {
   return lambda
     .getFunction({ FunctionName })
     .promise()
     .then((r) => r.Configuration.State)
     .then((status) => {
       if (status === "Active") {
-        resolve("Done, Lambda is Active!");
+        return "Done, Lambda is Active!";
       } else if (trial === 60) {
-        resolve("Ran out of time waiting for lambda...");
+        return "Ran out of time waiting for lambda...";
       } else {
         console.log(
           `Lambda had state ${status} on trial ${trial}. Trying again...`
         );
-        setTimeout(
-          () =>
-            waitForLambda({
-              trial: trial + 1,
-              resolve,
-            }),
-          1000
+        return new Promise((resolve) =>
+          setTimeout(() => resolve(waitForLambda(trial + 1)), 1000)
         );
       }
     })
     .then(console.log);
 };
 
-const waitForCloudfront = (props) => {
-  const { trial = 0, resolve } = props;
+const waitForCloudfront = (trial = 0) => {
   return cloudfront
     .getDistribution({ Id: process.env.CLOUDFRONT_DISTRIBUTION_ID })
     .promise()
     .then((r) => r.Distribution.Status)
     .then((status) => {
       if (status === "Enabled") {
-        resolve("Done, Cloudfront is Enabled!");
+        return "Done, Cloudfront is Enabled!";
       } else if (trial === 60) {
-        resolve("Ran out of time waiting for cloudfront...");
+        return "Ran out of time waiting for cloudfront...";
       } else {
         console.log(
           `Distribution had status ${status} on trial ${trial}. Trying again...`
         );
-        setTimeout(
-          () =>
-            waitForCloudfrontInvalidation({
-              trial: trial + 1,
-              resolve,
-            }),
-          1000
+        return new Promise((resolve) =>
+          setTimeout(() => resolve(waitForCloudfront(trial + 1)), 1000)
         );
       }
     })
@@ -120,7 +108,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
               console.log(
                 `Succesfully uploaded ${FunctionName} V${upd.Version} at ${upd.LastModified}`
               );
-              return new Promise((resolve) => waitForLambda({ resolve }))
+              return waitForLambda({ resolve })
                 .then(() =>
                   cloudfront
                     .getDistribution({
