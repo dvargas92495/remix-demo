@@ -47,7 +47,6 @@ const waitForLambda = ({ trial = 0, Qualifier }) => {
         );
       }
     })
-    .then(console.log);
 };
 
 const waitForCloudfront = (trial = 0) => {
@@ -69,7 +68,6 @@ const waitForCloudfront = (trial = 0) => {
         );
       }
     })
-    .then(console.log);
 };
 
 const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
@@ -112,6 +110,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
                 `Succesfully uploaded ${FunctionName} V${upd.Version} at ${upd.LastModified}`
               );
               return waitForLambda({ Qualifier: upd.Version })
+                .then(console.log)
                 .then(() =>
                   cloudfront
                     .getDistribution({
@@ -149,7 +148,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
                       console.log(
                         `Updated. Current Status: ${r.Distribution.Status}`
                       );
-                      return waitForCloudfront();
+                      return waitForCloudfront().then(console.log);
                     });
                 });
             });
