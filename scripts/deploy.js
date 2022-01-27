@@ -6,6 +6,8 @@ const crypto = require("crypto");
 const mime = require("mime-types");
 const lambda = new AWS.Lambda();
 const s3 = new AWS.S3();
+const cloudfront = new AWS.CloudFront();
+
 const appPath = (p) => path.resolve(fs.realpathSync(process.cwd()), p);
 const readDir = (s) =>
   fs.existsSync(s)
@@ -48,7 +50,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
       .promise()
       .then((l) => {
         if (sha256 === l.Configuration?.CodeSha256) {
-          return `No need to upload ${FunctionName}, shas match.`;
+          console.log(`No need to upload ${FunctionName}, shas match.`);
         } else {
           return lambda
             .updateFunctionCode({
@@ -57,13 +59,48 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
               ZipFile: Buffer.concat(data),
             })
             .promise()
-            .then(
-              (upd) =>
-                `Succesfully uploaded ${FunctionName} V${upd.Version} (${upd.FunctionArn}) at ${upd.LastModified}`
-            );
+            .then((upd) => {
+              console.log(
+                `Succesfully uploaded ${FunctionName} V${upd.Version} at ${upd.LastModified}`
+              );
+              return cloudfront
+                .getDistribution({ Id: process.env.CLOUDFRONT_DISTRIBUTION_ID })
+                .promise()
+                .then((config) => {
+                  const DistributionConfig = {
+                    ...config.Distribution.DistributionConfig,
+                    DefaultCacheBehavior: {
+                      ...config.Distribution.DistributionConfig
+                        .DefaultCacheBehavior,
+                      LambdaFunctionAssociations: {
+                        ...config.Distribution.DistributionConfig
+                          .DefaultCacheBehavior.LambdaFunctionAssociations,
+                        Items:
+                          config.Distribution.DistributionConfig.DefaultCacheBehavior.LambdaFunctionAssociations.Items.map(
+                            (l) =>
+                              l.LambdaFunctionARN.includes("origin-request")
+                                ? { ...l, LambdaFunctionARN: upd.FunctionArn }
+                                : l
+                          ),
+                      },
+                    },
+                  };
+                  return cloudfront
+                    .updateDistribution({
+                      DistributionConfig,
+                      Id: process.env.CLOUDFRONT_DISTRIBUTION_ID,
+                      IfMatch: config.ETag,
+                    })
+                    .promise()
+                    .then((r) =>
+                      console.log(
+                        `Updated. Current Status: ${r.Distribution.Status}`
+                      )
+                    );
+                });
+            });
         }
       })
-      .then(console.log)
       .then(() =>
         Promise.all(
           (keys
