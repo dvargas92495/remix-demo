@@ -23,6 +23,34 @@ const options = {
   date: new Date("09-24-1995"),
 };
 
+const waitForCloudfront = (props) => {
+  const { trial = 0, resolve } = props;
+  cloudfront
+    .getDistribution({ Id: process.env.CLOUDFRONT_DISTRIBUTION_ID })
+    .promise()
+    .then((r) => r.Distribution.Status)
+    .then((status) => {
+      if (status === "Enabled") {
+        resolve("Done!");
+      } else if (trial === 60) {
+        resolve("Ran out of time waiting for cloudfront...");
+      } else {
+        console.log(
+          `Distribution had status ${status} on trial ${trial}. Trying again...`
+        );
+        setTimeout(
+          () =>
+            waitForCloudfrontInvalidation({
+              ...args,
+              trial: trial + 1,
+              resolve,
+            }),
+          1000
+        );
+      }
+    });
+};
+
 const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
   const FunctionName = "remix-davidvargas-me_origin-request";
   const zip = archiver("zip", { gzip: true, zlib: { level: 9 } });
@@ -92,11 +120,14 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
                       IfMatch: config.ETag,
                     })
                     .promise()
-                    .then((r) =>
+                    .then((r) => {
                       console.log(
                         `Updated. Current Status: ${r.Distribution.Status}`
-                      )
-                    );
+                      );
+                      return new Promise((resolve) =>
+                        waitForCloudfront({ resolve })
+                      );
+                    });
                 });
             });
         }
