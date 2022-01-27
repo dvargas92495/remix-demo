@@ -60,10 +60,10 @@ const deployWithRemix = () => {
         }
       })
       .then(console.log)
-      .then(resolve)
       .catch((e) => {
         console.error(`deploy of ${functionName} failed:`);
-        reject(e);
+        console.error(e);
+        process.exit(1);
       })
   );
 };
