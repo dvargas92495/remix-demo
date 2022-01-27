@@ -27,13 +27,13 @@ const FunctionName = "remix-davidvargas-me_origin-request";
 
 const waitForLambda = (props) => {
   const { trial = 0, resolve } = props;
-  lambda
+  return lambda
     .getFunction({ FunctionName })
     .promise()
     .then((r) => r.Configuration.State)
     .then((status) => {
       if (status === "Active") {
-        resolve("Done!");
+        resolve("Done, Lambda is Active!");
       } else if (trial === 60) {
         resolve("Ran out of time waiting for lambda...");
       } else {
@@ -49,18 +49,19 @@ const waitForLambda = (props) => {
           1000
         );
       }
-    });
+    })
+    .then(console.log);
 };
 
 const waitForCloudfront = (props) => {
   const { trial = 0, resolve } = props;
-  cloudfront
+  return cloudfront
     .getDistribution({ Id: process.env.CLOUDFRONT_DISTRIBUTION_ID })
     .promise()
     .then((r) => r.Distribution.Status)
     .then((status) => {
       if (status === "Enabled") {
-        resolve("Done!");
+        resolve("Done, Cloudfront is Enabled!");
       } else if (trial === 60) {
         resolve("Ran out of time waiting for cloudfront...");
       } else {
@@ -76,7 +77,8 @@ const waitForCloudfront = (props) => {
           1000
         );
       }
-    });
+    })
+    .then(console.log);
 };
 
 const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
