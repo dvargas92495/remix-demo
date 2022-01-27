@@ -43,7 +43,7 @@ provider "github" {
 
 module "aws_static_site" {
   source  = "dvargas92495/static-site/aws"
-  version = "3.2.2"
+  version = "3.2.3"
 
   domain = "remix.davidvargas.me"
   secret = var.secret
@@ -66,4 +66,10 @@ resource "github_actions_secret" "deploy_aws_access_secret" {
   repository       = "remix"
   secret_name      = "DEPLOY_AWS_ACCESS_SECRET"
   plaintext_value  = module.aws_static_site.deploy-secret
+}
+
+resource "github_actions_secret" "cloudfront_distribution_id" {
+  repository       = "remix"
+  secret_name      = "CLOUDFONRT_DISTRIBUTION_ID"
+  plaintext_value  = module.aws_static_site.cloudfront_distribution_id
 }
