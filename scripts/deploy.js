@@ -21,7 +21,7 @@ const options = {
 const deployWithRemix = () => {
   const zip = archiver("zip", { gzip: true, zlib: { level: 9 } });
   readDir("out").forEach((f) =>
-    zip.file(appPath(f), { name: `${functionName}.js`, ...options })
+    zip.file(appPath(f), { name: `origin-request.js`, ...options })
   );
   return new Promise((resolve) => {
     const shasum = crypto.createHash("sha256");
