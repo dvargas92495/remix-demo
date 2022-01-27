@@ -5,6 +5,7 @@ const archiver = require("archiver");
 const crypto = require("crypto");
 const mime = require("mime-types");
 const lambda = new AWS.Lambda();
+const s3 = new AWS.S3();
 const appPath = (p) => path.resolve(fs.realpathSync(process.cwd()), p);
 const readDir = (s) =>
   fs.existsSync(s)
@@ -58,7 +59,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
             .promise()
             .then(
               (upd) =>
-                `Succesfully uploaded ${FunctionName} at ${upd.LastModified}`
+                `Succesfully uploaded ${FunctionName} V${upd.Version} (${upd.FunctionArn}) at ${upd.LastModified}`
             );
         }
       })

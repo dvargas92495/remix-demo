@@ -1,4 +1,4 @@
-const dev = require("@remix-run/dev/cli/commands");
+const dev = require("@remix-run/dev/cli/commands").dev;
 
 const feWithRemix = () => {
   return (
