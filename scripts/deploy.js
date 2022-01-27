@@ -19,6 +19,7 @@ const options = {
 };
 
 const deployWithRemix = () => {
+  const FunctionName = "remix-davidvargas-me_origin-request";
   const zip = archiver("zip", { gzip: true, zlib: { level: 9 } });
   readDir("out").forEach((f) =>
     zip.file(appPath(f), { name: `origin-request.js`, ...options })
@@ -39,7 +40,7 @@ const deployWithRemix = () => {
   }).then(({ sha256, data }) =>
     lambda
       .getFunction({
-        FunctionName: "remix-davidvargas-me_origin-request",
+        FunctionName,
       })
       .promise()
       .then((l) => {
@@ -61,7 +62,7 @@ const deployWithRemix = () => {
       })
       .then(console.log)
       .catch((e) => {
-        console.error(`deploy of ${functionName} failed:`);
+        console.error(`deploy failed:`);
         console.error(e);
         process.exit(1);
       })
