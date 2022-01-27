@@ -1,3 +1,5 @@
+import { Link } from "remix";
+
 export default function Index() {
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }}>
@@ -27,9 +29,9 @@ export default function Index() {
           </a>
         </li>
         <li>
-          <a href="/subroute">
-            subroute
-          </a>
+          <Link to="/posts">
+            posts
+          </Link>
         </li>
       </ul>
     </div>

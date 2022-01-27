@@ -15,7 +15,7 @@ const readDir = (s) =>
           f.isDirectory() ? readDir(`${s}/${f.name}`) : [`${s}/${f.name}`]
         )
     : [];
-const FE_OUT_DIR = path.join(process.env.FE_DIR_PREFIX || "", "public/build");
+const FE_OUT_DIR = path.join(process.env.FE_DIR_PREFIX || "", "public");
 
 const options = {
   date: new Date("09-24-1995"),
@@ -70,7 +70,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
             ? keys.filter((k) => fs.existsSync(k))
             : readDir(FE_OUT_DIR)
           ).map((p) => {
-            const Key = p.substring(FE_OUT_DIR.length + 1);
+            const Key = `build/${p.substring(FE_OUT_DIR.length + 1)}`;
             const uploadProps = {
               Bucket: domain,
               ContentType: mime.lookup(Key) || undefined,
