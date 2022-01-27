@@ -107,7 +107,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
             ? keys.filter((k) => fs.existsSync(k))
             : readDir(FE_OUT_DIR)
           ).map((p) => {
-            const Key = `build/${p.substring(FE_OUT_DIR.length + 1)}`;
+            const Key = p.substring(FE_OUT_DIR.length + 1);
             const uploadProps = {
               Bucket: domain,
               ContentType: mime.lookup(Key) || undefined,
