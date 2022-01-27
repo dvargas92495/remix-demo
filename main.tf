@@ -70,6 +70,6 @@ resource "github_actions_secret" "deploy_aws_access_secret" {
 
 resource "github_actions_secret" "cloudfront_distribution_id" {
   repository       = "remix"
-  secret_name      = "CLOUDFONRT_DISTRIBUTION_ID"
+  secret_name      = "CLOUDFRONT_DISTRIBUTION_ID"
   plaintext_value  = module.aws_static_site.cloudfront_distribution_id
 }
