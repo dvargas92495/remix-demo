@@ -25,9 +25,9 @@ const options = {
 
 const FunctionName = "remix-davidvargas-me_origin-request";
 
-const waitForLambda = (trial = 0) => {
+const waitForLambda = ({ trial = 0, Qualifier }) => {
   return lambda
-    .getFunction({ FunctionName })
+    .getFunction({ FunctionName, Qualifier })
     .promise()
     .then((r) => r.Configuration.State)
     .then((status) => {
@@ -40,7 +40,10 @@ const waitForLambda = (trial = 0) => {
           `Lambda had state ${status} on trial ${trial}. Trying again...`
         );
         return new Promise((resolve) =>
-          setTimeout(() => resolve(waitForLambda(trial + 1)), 1000)
+          setTimeout(
+            () => resolve(waitForLambda({ trial: trial + 1, Qualifier })),
+            1000
+          )
         );
       }
     })
@@ -108,7 +111,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
               console.log(
                 `Succesfully uploaded ${FunctionName} V${upd.Version} at ${upd.LastModified}`
               );
-              return waitForLambda()
+              return waitForLambda({ Qualifier: upd.Version })
                 .then(() =>
                   cloudfront
                     .getDistribution({
@@ -146,7 +149,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
                       console.log(
                         `Updated. Current Status: ${r.Distribution.Status}`
                       );
-                      return waitForCloudfront()
+                      return waitForCloudfront();
                     });
                 });
             });
