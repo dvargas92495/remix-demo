@@ -10,6 +10,7 @@ export default function PostSlug() {
   return (
     <div>
       <h1>Some Post: {slug?.title}</h1>
+      <p>URL: {slug?.slug}</p>
     </div>
   );
 }

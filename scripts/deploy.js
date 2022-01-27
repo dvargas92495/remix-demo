@@ -23,6 +23,35 @@ const options = {
   date: new Date("09-24-1995"),
 };
 
+const FunctionName = "remix-davidvargas-me_origin-request";
+
+const waitForLambda = (props) => {
+  const { trial = 0, resolve } = props;
+  lambda
+    .getFunction({ FunctionName })
+    .promise()
+    .then((r) => r.Configuration.State)
+    .then((status) => {
+      if (status === "Active") {
+        resolve("Done!");
+      } else if (trial === 60) {
+        resolve("Ran out of time waiting for lambda...");
+      } else {
+        console.log(
+          `Lambda had state ${status} on trial ${trial}. Trying again...`
+        );
+        setTimeout(
+          () =>
+            waitForLambda({
+              trial: trial + 1,
+              resolve,
+            }),
+          1000
+        );
+      }
+    });
+};
+
 const waitForCloudfront = (props) => {
   const { trial = 0, resolve } = props;
   cloudfront
@@ -41,7 +70,6 @@ const waitForCloudfront = (props) => {
         setTimeout(
           () =>
             waitForCloudfrontInvalidation({
-              ...args,
               trial: trial + 1,
               resolve,
             }),
@@ -52,7 +80,6 @@ const waitForCloudfront = (props) => {
 };
 
 const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
-  const FunctionName = "remix-davidvargas-me_origin-request";
   const zip = archiver("zip", { gzip: true, zlib: { level: 9 } });
   readDir("out").forEach((f) =>
     zip.file(appPath(f), { name: `origin-request.js`, ...options })
@@ -91,9 +118,14 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
               console.log(
                 `Succesfully uploaded ${FunctionName} V${upd.Version} at ${upd.LastModified}`
               );
-              return cloudfront
-                .getDistribution({ Id: process.env.CLOUDFRONT_DISTRIBUTION_ID })
-                .promise()
+              return new Promise((resolve) => waitForLambda({ resolve }))
+                .then(() =>
+                  cloudfront
+                    .getDistribution({
+                      Id: process.env.CLOUDFRONT_DISTRIBUTION_ID,
+                    })
+                    .promise()
+                )
                 .then((config) => {
                   const DistributionConfig = {
                     ...config.Distribution.DistributionConfig,
