@@ -108,7 +108,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
               console.log(
                 `Succesfully uploaded ${FunctionName} V${upd.Version} at ${upd.LastModified}`
               );
-              return waitForLambda({ resolve })
+              return waitForLambda()
                 .then(() =>
                   cloudfront
                     .getDistribution({
@@ -146,9 +146,7 @@ const deployWithRemix = ({ keys, domain = "remix.davidvargas.me" } = {}) => {
                       console.log(
                         `Updated. Current Status: ${r.Distribution.Status}`
                       );
-                      return new Promise((resolve) =>
-                        waitForCloudfront({ resolve })
-                      );
+                      return waitForCloudfront()
                     });
                 });
             });
